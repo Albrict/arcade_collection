@@ -2,7 +2,6 @@
 
 int main (int argc, char *argv[]) 
 {
-    Game::init();
-    Game::run();
-    Game::quit();
+    Game game;
+    game.run();
 }

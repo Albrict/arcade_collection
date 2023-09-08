@@ -4,6 +4,7 @@ enum class event {
     NONE,
     EXIT,
     PLAY,
+    GAME_PONG,
     GAME_OVER,
     RESTART
 };
