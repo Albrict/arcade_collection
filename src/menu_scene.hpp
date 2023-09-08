@@ -4,6 +4,13 @@
 #include "../third_party/imgui.h"
 
 class MenuScene : public Scene {
+    enum class state {
+        MAIN_MENU,
+        SETTINGS
+    };
+    bool opened = true;
+    state current_state = state::MAIN_MENU;
+    SettingsScene settings;
 public:
     MenuScene() {}
     ~MenuScene() {}
@@ -13,14 +20,4 @@ public:
     void draw() noexcept;
 private:
     void drawMenu();
-private:
-    bool opened = true;
-    ImVec2 button_size = {200.f, 70.f};
-
-    enum class state {
-        MAIN_MENU,
-        SETTINGS
-    };
-    state current_state = state::MAIN_MENU;
-    SettingsScene settings;
 };

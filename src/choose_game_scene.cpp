@@ -9,8 +9,10 @@ void ChooseGameScene::draw() noexcept
         ImGui::SetWindowPos({game_resolution.x / 2.f - ImGui::GetWindowWidth() / 2.f, 
                              game_resolution.y / 2.f - ImGui::GetWindowHeight() / 2.f});
         ImGui::SetWindowFontScale(2.f);
-        if (ImGui::Button("Pong", button_size))
+        if (ImGui::Button("Pong", Graphics::getGeneralButtonSize()))
             subject.notify(event::GAME_PONG);
+        if (ImGui::Button("Back to the main menu", Graphics::getGeneralButtonSize()))
+            subject.notify(event::BACK_TO_THE_MAIN_MENU);
         ImGui::End();
     }
 }
