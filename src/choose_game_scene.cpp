@@ -10,7 +10,7 @@ void ChooseGameScene::draw() noexcept
                              game_resolution.y / 2.f - ImGui::GetWindowHeight() / 2.f});
         ImGui::SetWindowFontScale(2.f);
         if (ImGui::Button("Pong", button_size))
-            ;
+            subject.notify(event::GAME_PONG);
         ImGui::End();
     }
 }

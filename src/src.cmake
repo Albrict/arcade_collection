@@ -4,4 +4,5 @@ set(game_source
     src/menu_scene.cpp
     src/graphics.cpp
     src/settings_scene.cpp
-    src/choose_game_scene.cpp)
+    src/choose_game_scene.cpp
+    src/pong_scene.cpp)

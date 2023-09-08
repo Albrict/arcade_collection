@@ -3,5 +3,5 @@
 
 namespace Graphics {
     Vector2 getResolution();
-    void setResolution(const Vector2 new_resolution);
+    void setResolution(const Vector2 new_resolution) noexcept;
 }
