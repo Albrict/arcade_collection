@@ -3,6 +3,8 @@
 enum class event {
     NONE,
     EXIT,
+    BACK_TO_THE_GAME_CHOOSE,
+    BACK_TO_THE_MAIN_MENU,
     PLAY,
     GAME_PONG,
     GAME_OVER,

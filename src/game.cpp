@@ -29,6 +29,7 @@ Game::Game()
 
     SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(game_resolution.x, game_resolution.y, title);
+    SetExitKey(KEY_NULL);
     rlImGuiSetup(dark_theme);
     SetTargetFPS(60);
     ToggleFullscreen();
@@ -95,16 +96,25 @@ void Game::proccessEvents()
     case event::EXIT:
         running = false;
         break;
+    case event::BACK_TO_THE_GAME_CHOOSE:
+        changeSceneTo(new ChooseGameScene);
+        break;
+    case event::BACK_TO_THE_MAIN_MENU:
+        changeSceneTo(new MenuScene);
+        break;
     case event::PLAY:
-        current_scene.reset();
-        current_scene = std::make_unique<ChooseGameScene>();
-        current_scene->subscripe(scene_observer);
+        changeSceneTo(new ChooseGameScene);
         break;
     case event::GAME_PONG:
-        current_scene.reset();
-        current_scene = std::make_unique<PongScene>();
-        current_scene->subscripe(scene_observer);
+        changeSceneTo(new PongScene);
+        break;
     default:
         break;
     }
+}
+
+void Game::changeSceneTo(Scene *new_scene)
+{
+    current_scene.reset(new_scene);
+    current_scene->subscripe(scene_observer); 
 }

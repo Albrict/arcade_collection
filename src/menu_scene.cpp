@@ -22,11 +22,11 @@ void MenuScene::drawMenu()
         ImGui::SetWindowPos({game_resolution.x / 2.f - ImGui::GetWindowWidth() / 2.f, 
                              game_resolution.y / 2.f - ImGui::GetWindowHeight() / 2.f});
         ImGui::SetWindowFontScale(2.f);
-        if (ImGui::Button("Play", button_size))
+        if (ImGui::Button("Play", Graphics::getGeneralButtonSize()))
             subject.notify(event::PLAY);
-        if (ImGui::Button("Settings", button_size))
+        if (ImGui::Button("Settings", Graphics::getGeneralButtonSize()))
             current_state = state::SETTINGS;
-        if (ImGui::Button("Exit", button_size))
+        if (ImGui::Button("Exit", Graphics::getGeneralButtonSize()))
             subject.notify(event::EXIT);
     }
     ImGui::End();
