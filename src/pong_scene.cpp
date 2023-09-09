@@ -141,15 +141,15 @@ void PongScene::drawMenu()
         ImGui::SetWindowPos({game_resolution.x / 2.f - ImGui::GetWindowWidth() / 2.f, 
                              game_resolution.y / 2.f - ImGui::GetWindowHeight() / 2.f});
         ImGui::SetWindowFontScale(2.f);
-        if (ImGui::Button("Player vs Player", Graphics::getGeneralButtonSize())) {
+        if (ImGui::Button("PvP", Graphics::getGeneralButtonSize())) {
             current_state = state::PLAYER_VS_PLAYER;
             saved_state = current_state;
         }
-        if (ImGui::Button("Player vs CPU", Graphics::getGeneralButtonSize())) {
+        if (ImGui::Button("PvE", Graphics::getGeneralButtonSize())) {
             current_state = state::PLAYER_VS_CPU;
             saved_state = current_state;
         }
-        if (ImGui::Button("Back to previous menu", Graphics::getGeneralButtonSize())) {
+        if (ImGui::Button("Back to Lobby", Graphics::getGeneralButtonSize())) {
             subject.notify(event::BACK_TO_THE_GAME_CHOOSE);
         }
     }
