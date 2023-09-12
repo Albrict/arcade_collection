@@ -11,7 +11,9 @@ void ChooseGameScene::draw() noexcept
         ImGui::SetWindowFontScale(2.f);
         if (ImGui::Button("Pong", button_size))
             subject.notify(event::GAME_PONG);
-        if (ImGui::Button("Main menu", {200.f, 70.f}))
+        if (ImGui::Button("Arkanoid", button_size))
+            subject.notify(event::GAME_ARKANOID);
+        if (ImGui::Button("Main menu", button_size))
             subject.notify(event::BACK_TO_THE_MAIN_MENU);
         ImGui::End();
     }

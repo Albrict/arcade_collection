@@ -1,11 +1,13 @@
 #include <algorithm>
 #include <raylib.h>
 #include <memory>
+#include <algorithm>
 
 #include "game.hpp"
 #include "menu_scene.hpp"
 #include "choose_game_scene.hpp"
 #include "pong_scene.hpp"
+#include "arkanoid_scene.hpp"
 #include "graphics.hpp"
 
 #include "../third_party/imgui.h"
@@ -20,6 +22,7 @@ Game::Game()
     scene_observer(),
     running(true)
 {
+    
     const char *title = "Arcade collection";
     const bool dark_theme = true;
     const int FPS = 60;
@@ -54,7 +57,7 @@ void Game::run()
         if (WindowShouldClose())
             running = false;
         game_resolution = Graphics::getResolution();
-        const float scale = MIN(GetScreenWidth() / game_resolution.x, GetScreenHeight() / game_resolution.y);
+        const float scale = std::min(GetScreenWidth() / game_resolution.x, GetScreenHeight() / game_resolution.y);
         proccessEvents();
         current_scene->update();
         draw(target, game_resolution, scale);
@@ -107,6 +110,9 @@ void Game::proccessEvents()
         break;
     case event::GAME_PONG:
         changeSceneTo(new PongScene);
+        break;
+    case event::GAME_ARKANOID:
+        changeSceneTo(new ArkanoidScene);
         break;
     default:
         break;
