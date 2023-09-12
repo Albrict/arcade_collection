@@ -2,16 +2,10 @@
 #include "../third_party/imgui.h"
 #include "pong_scene.hpp"
 #include "graphics.hpp"
+#include "collision.hpp"
 
 namespace {
     constexpr float MaxBounceAngle = 75 * DEG2RAD;
-    void checkRecBounds(Rectangle &rect)
-    {
-        if (rect.y + rect.height >= Graphics::getResolution().y)
-            rect.y = Graphics::getResolution().y - rect.height;
-        else if (rect.y <= 0.f)
-            rect.y = 0.f;
-    }
 }
 
 PongScene::PongScene()
@@ -50,9 +44,8 @@ void PongScene::proccessEvents()
 
 void PongScene::update()
 {
-    if (current_state == state::PAUSE) {
+    if (current_state == state::PAUSE)
         return;
-    } 
     if (current_state == state::PLAYER_VS_CPU)
         updatePlayerVsCPU();
     racket.x += velocity.x * GetFrameTime();
@@ -92,19 +85,19 @@ void PongScene::proccessPlayerVsPlayer()
     }
     if (IsKeyDown(KEY_W)) {
         first_player.y -= 10.f;
-        checkRecBounds(first_player);
+        Collision::checkRecBoundsAndLimit(first_player);
     } 
     if (IsKeyDown(KEY_S)) {
         first_player.y += 10.f;
-        checkRecBounds(first_player);
+        Collision::checkRecBoundsAndLimit(first_player);
     } 
     if (IsKeyDown(KEY_UP)) {
         second_player.y -= 10.f;
-        checkRecBounds(second_player);
+        Collision::checkRecBoundsAndLimit(second_player);
     } 
     if (IsKeyDown(KEY_DOWN)) {
         second_player.y += 10.f;
-        checkRecBounds(second_player);
+        Collision::checkRecBoundsAndLimit(second_player);
     }
 }
 
@@ -115,11 +108,11 @@ void PongScene::proccessPlayerVsCPU()
     }
     if (IsKeyDown(KEY_W)) {
         first_player.y -= 10.f;
-        checkRecBounds(first_player);
+        Collision::checkRecBoundsAndLimit(first_player);
     } 
     if (IsKeyDown(KEY_S)) {
         first_player.y += 10.f;
-        checkRecBounds(first_player);
+        Collision::checkRecBoundsAndLimit(first_player);
     }
 }
 
