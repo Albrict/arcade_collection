@@ -16,35 +16,35 @@
 #define MAX(a, b) ((a)>(b)? (a) : (b))
 #define MIN(a, b) ((a)<(b)? (a) : (b))
 
+namespace Game {
+    std::unique_ptr<Scene> current_scene;
+    Observer scene_observer;
 
-Game::Game()
-    : current_scene(),
-    scene_observer(),
-    running(true)
+    bool running;
+
+    void proccessEvents();
+    void draw(RenderTexture2D target, const Vector2 resolution, const float scale);
+    inline void changeSceneTo(Scene *new_scene);
+};
+
+void Game::init()
 {
-    
-    const char *title = "Arcade collection";
-    const bool dark_theme = true;
-    const int FPS = 60;
     // This is game resolution, not a physical one
     const Vector2 game_resolution = {1920.f, 1200.f};
     Graphics::setResolution(game_resolution);
 
     SetConfigFlags(FLAG_VSYNC_HINT);
-    InitWindow(game_resolution.x, game_resolution.y, title);
+    InitWindow(game_resolution.x, game_resolution.y, "Arcade Collection");
     SetExitKey(KEY_NULL);
-    rlImGuiSetup(dark_theme);
+    // Enable dark theme
+    rlImGuiSetup(true);
     SetTargetFPS(60);
     ToggleFullscreen();
     
     current_scene = std::make_unique<MenuScene>();
     current_scene->subscripe(scene_observer);
-}
 
-Game::~Game()
-{
-    rlImGuiShutdown();
-    CloseWindow();
+    running = true;
 }
 
 void Game::run()
@@ -53,6 +53,7 @@ void Game::run()
     Vector2 game_resolution = Graphics::getResolution();
     target = LoadRenderTexture(game_resolution.x, game_resolution.y);
     SetTextureFilter(target.texture, TEXTURE_FILTER_POINT);  
+
     while(running) {
         if (WindowShouldClose())
             running = false;
@@ -63,6 +64,43 @@ void Game::run()
         draw(target, game_resolution, scale);
     }
     UnloadRenderTexture(target);
+}
+
+void Game::quit()
+{
+    rlImGuiShutdown();
+    CloseWindow();
+}
+
+void Game::proccessEvents()
+{
+    current_scene->proccessEvents();
+    event event = scene_observer.getEvent();
+    switch(event) {
+    case event::NONE:
+        return;
+        break;
+    case event::EXIT:
+        running = false;
+        break;
+    case event::BACK_TO_THE_GAME_CHOOSE:
+        changeSceneTo(new ChooseGameScene);
+        break;
+    case event::BACK_TO_THE_MAIN_MENU:
+        changeSceneTo(new MenuScene);
+        break;
+    case event::PLAY:
+        changeSceneTo(new ChooseGameScene);
+        break;
+    case event::GAME_PONG:
+        changeSceneTo(new PongScene);
+        break;
+    case event::GAME_ARKANOID:
+        changeSceneTo(new ArkanoidScene);
+        break;
+    default:
+        break;
+    }
 }
 
 void Game::draw(RenderTexture2D target, const Vector2 resolution, const float scale)
@@ -91,35 +129,7 @@ void Game::draw(RenderTexture2D target, const Vector2 resolution, const float sc
     EndDrawing();
 }
 
-void Game::proccessEvents()
-{
-    current_scene->proccessEvents();
-    event event = scene_observer.getEvent();
-    switch(event) {
-    case event::EXIT:
-        running = false;
-        break;
-    case event::BACK_TO_THE_GAME_CHOOSE:
-        changeSceneTo(new ChooseGameScene);
-        break;
-    case event::BACK_TO_THE_MAIN_MENU:
-        changeSceneTo(new MenuScene);
-        break;
-    case event::PLAY:
-        changeSceneTo(new ChooseGameScene);
-        break;
-    case event::GAME_PONG:
-        changeSceneTo(new PongScene);
-        break;
-    case event::GAME_ARKANOID:
-        changeSceneTo(new ArkanoidScene);
-        break;
-    default:
-        break;
-    }
-}
-
-void Game::changeSceneTo(Scene *new_scene)
+inline void Game::changeSceneTo(Scene *new_scene)
 {
     current_scene.reset(new_scene);
     current_scene->subscripe(scene_observer); 
