@@ -67,9 +67,6 @@ void PongScene::draw() noexcept
         const float middle_x = Graphics::getResolution().x / 2.f;
         DrawLine(middle_x, 0.f, middle_x, Graphics::getResolution().y, WHITE);
 
-        DrawText(TextFormat("Ball velocity x:%f", velocity.x), 0, 0, font_size, WHITE);
-        DrawText(TextFormat("Ball velocity y:%f", velocity.y), 0, font_size + 10.f, font_size, WHITE);
-    
         DrawText(TextFormat("%d", first_player_score), middle_x - middle_x / 2.f, Graphics::getResolution().y / 4.f, font_size, WHITE);
         DrawText(TextFormat("%d", second_player_score), middle_x + middle_x / 2.f, Graphics::getResolution().y / 4.f, font_size, WHITE);
         DrawRectangleRec(first_player, WHITE);

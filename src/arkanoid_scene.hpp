@@ -3,27 +3,17 @@
 #include <array>
 #include <vector>
 #include <memory>
+#include "brick.hpp"
 #include "graphics.hpp"
 #include "scene.hpp"
 #include "shapes.hpp"
 
 class ArkanoidScene : public Scene {
-    enum class brickType {
-        SOFT,
-        MIDDLE,
-        HARD,
-        DESTROYED
-    };
-    struct Brick {
-        brickType type;
-        Color color;
-        Rectangle brick_rect;
-        Brick(const brickType type, const Rectangle brick_rect);
-    };
-    std::array<std::vector<std::unique_ptr<Brick>>, 4> bricks;
     const Rectangle brick_rect;
     Rectangle player;
     Shapes::Circle ball;
+    
+    std::vector<std::vector<std::unique_ptr<Brick>>> bricks;
 public:
     ArkanoidScene();
     ~ArkanoidScene() = default;
@@ -33,4 +23,5 @@ public:
     void draw() noexcept;
 private:
     void checkCollision();
+    std::unique_ptr<Brick> createBrickFrom(const Brick::brickType type, const Rectangle rect);
 };
