@@ -8,6 +8,7 @@ enum class event {
     PLAY,
     GAME_PONG,
     GAME_ARKANOID,
+    GAME_SPACE_INVADERS,
     GAME_OVER,
     RESTART
 };

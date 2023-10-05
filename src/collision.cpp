@@ -12,3 +12,9 @@ void Collision::checkRecBoundsAndLimit(Rectangle &rect)
     if (rect.x <= 0.f)
         rect.x = 0.f;
 }
+
+void Collision::checkCircleBoundsAndLimit(Shapes::Circle &circle)
+{
+    if (circle.radius + circle.position.x >= Graphics::getResolution().x)
+        circle.position.x = Graphics::getResolution().x - circle.radius;
+}
