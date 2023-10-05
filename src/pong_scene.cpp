@@ -62,6 +62,7 @@ void PongScene::draw() noexcept
         break;
     case state::PAUSE:
         drawPause();
+        [[fallthrough]];
     default:
         const float font_size = 54.f;
         const float middle_x = Graphics::getResolution().x / 2.f;

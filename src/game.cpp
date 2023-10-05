@@ -13,9 +13,6 @@
 #include "../third_party/imgui.h"
 #include "../third_party/rlImGui.h"
 
-#define MAX(a, b) ((a)>(b)? (a) : (b))
-#define MIN(a, b) ((a)<(b)? (a) : (b))
-
 namespace Game {
     std::unique_ptr<Scene> current_scene;
     Observer scene_observer;
@@ -97,6 +94,9 @@ void Game::proccessEvents()
         break;
     case event::GAME_ARKANOID:
         changeSceneTo(new ArkanoidScene);
+        break;
+    case event::GAME_SPACE_INVADERS:
+        ;
         break;
     default:
         break;

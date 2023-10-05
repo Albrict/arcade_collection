@@ -9,11 +9,17 @@
 #include "shapes.hpp"
 
 class ArkanoidScene : public Scene {
-    const Rectangle brick_rect;
+    enum class state {
+        LEVEL_MENU,
+        GAME
+    };
+      
+    bool ball_active;
     Rectangle player;
-    Shapes::Circle ball;
-    
+    state current_state; 
     std::vector<std::vector<std::unique_ptr<Brick>>> bricks;
+    std::unique_ptr<Shapes::Circle> ball;
+
 public:
     ArkanoidScene();
     ~ArkanoidScene() = default;
@@ -22,6 +28,10 @@ public:
     void update();
     void draw() noexcept;
 private:
-    void checkCollision();
+    void proccessLevelMenu();
+    void proccessGame();
+    void checkBallCollisionAndBounce();
+    void checkPlayerCollisionWithBall(); 
+    void checkCollisionWithBrick(Brick *brick);
     std::unique_ptr<Brick> createBrickFrom(const Brick::brickType type, const Rectangle rect);
 };

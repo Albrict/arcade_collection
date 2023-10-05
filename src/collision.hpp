@@ -1,7 +1,8 @@
 #pragma once
 #include <raylib.h>
+#include "shapes.hpp"
 
 namespace Collision {
     void checkRecBoundsAndLimit(Rectangle &rect);
-//    bool checkCircleBounds(const Circle circle);
+    void checkCircleBoundsAndLimit(Shapes::Circle &circle);
 }
