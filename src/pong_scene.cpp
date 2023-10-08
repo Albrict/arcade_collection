@@ -26,22 +26,9 @@ PongScene::PongScene()
     menu_buttons(),
     pause_buttons()
 {
-    // Initialize players position
-    const Vector2 resolution = Graphics::getResolution();
-    const float players_width = 10.f;
-    const float players_height = 100.f;
-    first_player = {.x = 30.f, .y = resolution.y / 2.f, .width = players_width, .height = players_height};
-    second_player = {.x = resolution.x - 40.f, .y = resolution.y / 2.f, .width = players_width, .height = players_height};
-    
-    // Get random direction for racket
-    const int direction = GetRandomValue(LEFT, RIGHT);
-    if (direction == LEFT)
-        velocity = {racket_speed, 0.0f};
-    else  
-        velocity = {racket_speed * -1.f, 0.0f};
-
     // Initialize UI
-    const std::array<const char*, 4> button_labels = {"PvP", "PvE", "Back to lobby", "Continue"};
+    const Vector2 resolution = Graphics::getResolution();
+    const std::array<const char*, 5> button_labels = {"PvP", "PvE", "Back to lobby", "Continue", "Back to menu"};
     const float button_width = 215.f;
     const float button_height = 70.f;
 
@@ -55,11 +42,11 @@ PongScene::PongScene()
     initial_y = resolution.y / 3 - button_height;
     pause_buttons[CONTINUE] = std::make_unique<SimpleButton>(initial_x, initial_y, button_width, button_height, button_labels[3]);
     initial_y += button_height * 2;
-    pause_buttons[BACK_TO_MENU] = std::make_unique<SimpleButton>(initial_x, initial_y, button_width, button_height, button_labels[2]);
+    pause_buttons[BACK_TO_MENU] = std::make_unique<SimpleButton>(initial_x, initial_y, button_width, button_height, button_labels[4]);
     
     // Initialize callbacks
-    auto pvp_callback           = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = state::PLAYER_VS_PLAYER; };
-    auto pve_callback           = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = state::PLAYER_VS_CPU; };
+    auto pvp_callback           = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = state::PLAYER_VS_PLAYER; scene->initializeObjects();};
+    auto pve_callback           = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = state::PLAYER_VS_CPU; scene->initializeObjects(); };
     auto back_to_lobby_callback = [](void *data) { Subject   *subject = static_cast<Subject*>(data); subject->notify(event::BACK_TO_THE_GAME_CHOOSE); };
     auto back_to_menu_callback  = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = state::MENU; };
     auto continue_callback      = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = scene->saved_state; };
@@ -132,6 +119,7 @@ void PongScene::draw() const
 void PongScene::proccessPlayerVsPlayer()
 {
     if (IsKeyDown(KEY_ESCAPE)) {
+        saved_state = current_state;
         current_state = state::PAUSE;
     }
     if (IsKeyDown(KEY_W)) {
@@ -155,6 +143,7 @@ void PongScene::proccessPlayerVsPlayer()
 void PongScene::proccessPlayerVsCPU()
 {
     if (IsKeyDown(KEY_ESCAPE)) {
+        saved_state = current_state;
         current_state = state::PAUSE;
     }
     if (IsKeyDown(KEY_W)) {
@@ -215,4 +204,23 @@ void PongScene::checkBallCollision(const Rectangle rect) noexcept
                 velocity.y = -1000.f;
         }
     }
+}
+
+void PongScene::initializeObjects()
+{
+    racket = {Graphics::getResolution().x / 2.f, Graphics::getResolution().y / 2.f, 20.f, 20.f};
+    first_player_score = 0;
+    second_player_score = 0;
+    const Vector2 resolution = Graphics::getResolution();
+    const float players_width = 10.f;
+    const float players_height = 100.f;
+    first_player = {.x = 30.f, .y = resolution.y / 2.f, .width = players_width, .height = players_height};
+    second_player = {.x = resolution.x - 40.f, .y = resolution.y / 2.f, .width = players_width, .height = players_height};
+    
+    // Get random direction for racket
+    const int direction = GetRandomValue(LEFT, RIGHT);
+    if (direction == LEFT)
+        velocity = {racket_speed, 0.0f};
+    else  
+        velocity = {racket_speed * -1.f, 0.0f};
 }

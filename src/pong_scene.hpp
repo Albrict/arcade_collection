@@ -12,6 +12,7 @@ public:
     void update() override;
     void draw() const override;
 private:
+    void initializeObjects();
     void proccessPlayerVsPlayer();
     void proccessPlayerVsCPU();
      
