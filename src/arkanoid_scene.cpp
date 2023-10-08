@@ -33,7 +33,7 @@ ArkanoidScene::ArkanoidScene()
     ball = std::make_unique<Shapes::Circle>(ball_pos, ball_velocity, 10.f);
 
     // Load level
-    std::ifstream input( "test.data", std::ios::binary );
+    std::ifstream input( "../assets/arkanoid_levels/level_one.data", std::ios::binary );
     std::vector<unsigned char> buffer(std::istreambuf_iterator<char>(input), {});
     // Deserialize it
     auto level_data = cista::deserialize<data_vector>(buffer);
