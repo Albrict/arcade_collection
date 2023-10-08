@@ -1,15 +1,19 @@
 #pragma once
 #include "scene.hpp"
-#include "../third_party/imgui.h"
+#include "simple_button.hpp"
+#include <array>
 
 class ChooseGameScene : public Scene {
-    bool opened = true;
-    const ImVec2 button_size = {200.f, 70.f};
 public:
-    ChooseGameScene() = default; 
+    ChooseGameScene();
     ~ChooseGameScene() = default; 
 
-    void proccessEvents() {}
-    void update() {}
-    void draw() noexcept;
+    void proccessEvents() override 
+    { for (auto &button : menu_buttons) button->proccessEvents(); }
+    void update() override
+    { for (auto &button : menu_buttons) button->update(); }
+    void draw() const override
+    { for (auto &button : menu_buttons) button->draw(); }
+private:
+    std::array<SimpleButton::unique_ptr, 4> menu_buttons {};
 };

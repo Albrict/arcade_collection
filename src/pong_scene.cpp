@@ -6,30 +6,83 @@
 
 namespace {
     constexpr float MaxBounceAngle = 75 * DEG2RAD;
+    enum MenuButtons : size_t {
+        PVP = 0,
+        PVE,
+        BACK_TO_LOBBY
+    };
+    enum PauseButtons : size_t {
+        CONTINUE = 0,
+        BACK_TO_MENU
+    };
 }
 
 PongScene::PongScene()
-    : racket({Graphics::getResolution().x / 2.f, Graphics::getResolution().y / 2.f, 20.f, 20.f}),
+    : Scene(),
+    racket({Graphics::getResolution().x / 2.f, Graphics::getResolution().y / 2.f, 20.f, 20.f}),
     first_player_score(0),
     second_player_score(0),
-    current_state(state::MENU)
+    current_state(state::MENU),
+    menu_buttons(),
+    pause_buttons()
 {
+    // Initialize players position
     const Vector2 resolution = Graphics::getResolution();
     const float players_width = 10.f;
     const float players_height = 100.f;
     first_player = {.x = 30.f, .y = resolution.y / 2.f, .width = players_width, .height = players_height};
     second_player = {.x = resolution.x - 40.f, .y = resolution.y / 2.f, .width = players_width, .height = players_height};
-
+    
+    // Get random direction for racket
     const int direction = GetRandomValue(LEFT, RIGHT);
     if (direction == LEFT)
         velocity = {racket_speed, 0.0f};
     else  
         velocity = {racket_speed * -1.f, 0.0f};
+
+    // Initialize UI
+    const std::array<const char*, 4> button_labels = {"PvP", "PvE", "Back to lobby", "Continue"};
+    const float button_width = 215.f;
+    const float button_height = 70.f;
+
+    const int initial_x = resolution.x / 2 - button_width / 2;
+    int initial_y = resolution.y / 3 - button_height;
+
+    for (int i = 0; i < menu_buttons.size(); ++i) {
+        menu_buttons[i] = std::make_unique<SimpleButton>(initial_x, initial_y, button_width, button_height, button_labels[i]);
+        initial_y += button_height * 2;
+    }
+    initial_y = resolution.y / 3 - button_height;
+    pause_buttons[CONTINUE] = std::make_unique<SimpleButton>(initial_x, initial_y, button_width, button_height, button_labels[3]);
+    initial_y += button_height * 2;
+    pause_buttons[BACK_TO_MENU] = std::make_unique<SimpleButton>(initial_x, initial_y, button_width, button_height, button_labels[2]);
+    
+    // Initialize callbacks
+    auto pvp_callback           = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = state::PLAYER_VS_PLAYER; };
+    auto pve_callback           = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = state::PLAYER_VS_CPU; };
+    auto back_to_lobby_callback = [](void *data) { Subject   *subject = static_cast<Subject*>(data); subject->notify(event::BACK_TO_THE_GAME_CHOOSE); };
+    auto back_to_menu_callback  = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = state::MENU; };
+    auto continue_callback      = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = scene->saved_state; };
+
+    menu_buttons[PVP]->setCallback(pvp_callback, this);
+    menu_buttons[PVE]->setCallback(pve_callback, this);
+    menu_buttons[BACK_TO_LOBBY]->setCallback(back_to_lobby_callback, &this->subject);
+
+    pause_buttons[CONTINUE]->setCallback(continue_callback, this);
+    pause_buttons[BACK_TO_MENU]->setCallback(back_to_menu_callback, this);
 }
 
 void PongScene::proccessEvents()
 {
     switch(current_state) {
+    case state::MENU:
+        for (auto &button : menu_buttons)
+            button->proccessEvents();
+        break;
+    case state::PAUSE:
+        for (auto &button : pause_buttons)
+            button->proccessEvents();
+        break;
     case state::PLAYER_VS_CPU:
         proccessPlayerVsCPU();
         break;
@@ -39,7 +92,6 @@ void PongScene::proccessEvents()
     default:
         break;
     }
-
 }
 
 void PongScene::update()
@@ -52,9 +104,10 @@ void PongScene::update()
     racket.y += velocity.y * GetFrameTime();
     checkBallCollision(first_player);
     checkBallCollision(second_player);
+    
 }
 
-void PongScene::draw() noexcept
+void PongScene::draw() const 
 {
     switch(current_state) {
     case state::MENU:
@@ -122,48 +175,6 @@ void PongScene::updatePlayerVsCPU()
         second_player.y += 10.f;
  
 }
-
-void PongScene::drawMenu()
-{
-    bool opened = true;
-    const Vector2 game_resolution = Graphics::getResolution();
-    if (ImGui::Begin("Menu", &opened, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar | 
-                     ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
-        ImGui::SetWindowPos({game_resolution.x / 2.f - ImGui::GetWindowWidth() / 2.f, 
-                             game_resolution.y / 2.f - ImGui::GetWindowHeight() / 2.f});
-        ImGui::SetWindowFontScale(2.f);
-        if (ImGui::Button("PvP", Graphics::getGeneralButtonSize())) {
-            current_state = state::PLAYER_VS_PLAYER;
-            saved_state = current_state;
-        }
-        if (ImGui::Button("PvE", Graphics::getGeneralButtonSize())) {
-            current_state = state::PLAYER_VS_CPU;
-            saved_state = current_state;
-        }
-        if (ImGui::Button("Back to Lobby", Graphics::getGeneralButtonSize())) {
-            subject.notify(event::BACK_TO_THE_GAME_CHOOSE);
-        }
-    }
-    ImGui::End();
-}
-
-void PongScene::drawPause()
-{
-    bool opened = true;
-    const Vector2 game_resolution = Graphics::getResolution();
-    if (ImGui::Begin("Menu", &opened, ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_NoTitleBar | 
-                     ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize)) {
-        ImGui::SetWindowPos({game_resolution.x / 2.f - ImGui::GetWindowWidth() / 2.f, 
-                             game_resolution.y / 2.f - ImGui::GetWindowHeight() / 2.f});
-        ImGui::SetWindowFontScale(2.f);
-        if (ImGui::Button("Continue", Graphics::getGeneralButtonSize()))
-            current_state = saved_state;
-        if (ImGui::Button("Back to game menu", Graphics::getGeneralButtonSize()))
-            subject.notify(event::BACK_TO_THE_GAME_CHOOSE);
-    }
-    ImGui::End();
-}
-
 // TODO: Naive ball physics implementation.
 // But can be better, check this implementation:
 // https://gamedev.stackexchange.com/questions/4253/in-pong-how-do-you-calculate-the-balls-direction-when-it-bounces-off-the-paddl

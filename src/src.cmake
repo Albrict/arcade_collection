@@ -7,4 +7,6 @@ set(game_source
     src/choose_game_scene.cpp
     src/pong_scene.cpp
     src/arkanoid_scene.cpp
-    src/collision.cpp)
+    src/collision.cpp
+    src/simple_button.cpp 
+    src/label.cpp)

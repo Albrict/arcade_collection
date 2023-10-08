@@ -3,15 +3,12 @@
 #include <memory>
 #include <algorithm>
 
+#include "arkanoid_scene.hpp"
+#include "choose_game_scene.hpp"
 #include "game.hpp"
 #include "menu_scene.hpp"
-#include "choose_game_scene.hpp"
 #include "pong_scene.hpp"
-#include "arkanoid_scene.hpp"
 #include "graphics.hpp"
-
-#include "../third_party/imgui.h"
-#include "../third_party/rlImGui.h"
 
 namespace Game {
     std::unique_ptr<Scene> current_scene;
@@ -34,7 +31,6 @@ void Game::init()
     InitWindow(game_resolution.x, game_resolution.y, "Arcade Collection");
     SetExitKey(KEY_NULL);
     // Enable dark theme
-    rlImGuiSetup(true);
     SetTargetFPS(60);
     ToggleFullscreen();
     
@@ -65,7 +61,6 @@ void Game::run()
 
 void Game::quit()
 {
-    rlImGuiShutdown();
     CloseWindow();
 }
 
@@ -87,7 +82,7 @@ void Game::proccessEvents()
         changeSceneTo(new MenuScene);
         break;
     case event::PLAY:
-        changeSceneTo(new ChooseGameScene);
+       changeSceneTo(new ChooseGameScene);
         break;
     case event::GAME_PONG:
         changeSceneTo(new PongScene);
@@ -116,9 +111,7 @@ void Game::draw(RenderTexture2D target, const Vector2 resolution, const float sc
     BeginTextureMode(target);
     {
         ClearBackground(BLACK);
-        rlImGuiBegin();
-            current_scene->draw(); 
-        rlImGuiEnd();
+        current_scene->draw(); 
     }
     EndTextureMode();
 
