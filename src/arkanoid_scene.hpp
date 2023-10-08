@@ -24,9 +24,9 @@ public:
     ArkanoidScene();
     ~ArkanoidScene() = default;
 
-    void proccessEvents();
-    void update();
-    void draw() noexcept;
+    void proccessEvents() override;
+    void update() override;
+    void draw() const override;
 private:
     void proccessLevelMenu();
     void proccessGame();

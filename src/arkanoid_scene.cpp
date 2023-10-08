@@ -19,7 +19,7 @@ namespace {
 }
 
 ArkanoidScene::ArkanoidScene()
-    :
+    : Scene(),
     ball_active(false),
     player({Graphics::getResolution().x / 2.f, Graphics::getResolution().y / 2.f + Graphics::getResolution().y / 4.f, 200.f, 20.f}),
     ball(),
@@ -89,7 +89,7 @@ void ArkanoidScene::update()
     }
 }
 
-void ArkanoidScene::draw() noexcept
+void ArkanoidScene::draw() const 
 {
     for (const auto &row : bricks) {
         for (const auto &brick : row)

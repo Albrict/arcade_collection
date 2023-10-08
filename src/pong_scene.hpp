@@ -1,10 +1,39 @@
 #pragma once
-#include <raylib.h>
-#include <memory>
 #include "scene.hpp"
+#include "simple_button.hpp"
 #include "graphics.hpp"
 
 class PongScene : public Scene {
+public:
+    PongScene();
+    ~PongScene() = default;
+
+    void proccessEvents() override;
+    void update() override;
+    void draw() const override;
+private:
+    void proccessPlayerVsPlayer();
+    void proccessPlayerVsCPU();
+     
+    void updatePlayerVsCPU();
+    void drawMenu() const
+    { for (const auto &button : menu_buttons) button->draw(); }
+    void drawPause() const 
+    { for (const auto &button : pause_buttons) button->draw(); }
+
+    void checkBallCollision(const Rectangle rect) noexcept;
+    void moveBallToTheMiddle() noexcept
+    {
+        const int direction = GetRandomValue(LEFT, RIGHT);
+        racket.x = Graphics::getResolution().x / 2.f;
+        racket.y = Graphics::getResolution().y / 2.f;
+
+        if (direction == LEFT)
+            velocity = {racket_speed, 0.0f};
+        else  
+            velocity = {racket_speed * -1.f, 0.0f};
+    }
+private:
     Rectangle first_player;
     Rectangle second_player;
     Rectangle racket;
@@ -27,32 +56,7 @@ class PongScene : public Scene {
     };
 
     state current_state;
-    // Need for pause state
-    state saved_state;
-public:
-    PongScene();
-    ~PongScene() = default;
-
-    void proccessEvents();
-    void update();
-    void draw() noexcept;
-private:
-    void proccessPlayerVsPlayer();
-    void proccessPlayerVsCPU();
-    
-    void updatePlayerVsCPU();
-    void drawMenu();
-    void drawPause();
-    void checkBallCollision(const Rectangle rect) noexcept;
-    void moveBallToTheMiddle() noexcept
-    {
-        const int direction = GetRandomValue(LEFT, RIGHT);
-        racket.x = Graphics::getResolution().x / 2.f;
-        racket.y = Graphics::getResolution().y / 2.f;
-
-        if (direction == LEFT)
-            velocity = {racket_speed, 0.0f};
-        else  
-            velocity = {racket_speed * -1.f, 0.0f};
-    }
+    state saved_state; // Needed for pause state
+    std::array<SimpleButton::unique_ptr, 3> menu_buttons;
+    std::array<SimpleButton::unique_ptr, 2> pause_buttons;
 };
