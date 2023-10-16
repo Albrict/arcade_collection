@@ -3,7 +3,7 @@
 
 class Brick {
 public: 
-    enum brickType {
+    enum brickType : int {
         SOFT,
         MIDDLE,
         HARD,

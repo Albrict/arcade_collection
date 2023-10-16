@@ -143,6 +143,16 @@ void ArkanoidScene::draw() const
             for (const auto &brick : row)
                 brick->draw();
         }
+//        const Rectangle brick_rect({0.f, 0.f, Graphics::getResolution().x / BRICK_AMOUNT, 20.f});
+//        Rectangle brick = brick_rect;
+//        for (size_t i = 0; i < brick_grid.size(); ++i) {
+//            for (size_t j = 0; j < brick_grid[i].size(); ++j) {
+//                drawBrick(brick_grid[i][j], brick);
+//                brick.x += brick.width;
+//            }
+//            brick.x = 0.f;
+//            brick.y += brick.height;
+//        }
         DrawRectangleRec(player, RED);
         DrawCircle(ball->position.x, ball->position.y, ball->radius, WHITE);
     }
@@ -237,31 +247,54 @@ void ArkanoidScene::checkPlayerCollisionWithBall()
     }
 }
 
+
 void ArkanoidScene::loadLevel(const path &path)
 {
-    bricks.clear();
     Rectangle brick_rect({0.f, 0.f, Graphics::getResolution().x / BRICK_AMOUNT, 20.f});
-    std::ifstream input(path, std::ios_base::binary);
 
+    std::ifstream input(path, std::ios_base::binary);
     // Read amount of vectors
     unsigned int rows;
     input.read(reinterpret_cast<char*>(&rows), sizeof(unsigned int));
-    bricks.resize(rows);
     for (size_t i = 0; i < rows; ++i) {
         // Read amount of data
         unsigned int cols;
         input.read(reinterpret_cast<char*>(&cols), sizeof(unsigned int));
-        bricks[i].resize(cols);
         // Load vector
         std::vector<Brick::brickType> loaded_vector(cols);
         input.read(reinterpret_cast<char*>(&loaded_vector[0]), cols * sizeof(Brick::brickType));
-
-        for (size_t j = 0; j < loaded_vector.size(); ++j) {
-            bricks[i][j] = createBrickFrom(loaded_vector[j], brick_rect);
-            brick_rect.x += brick_rect.width;
-        }
-        brick_rect.x = 0.f;
-        brick_rect.y += brick_rect.height;
+        brick_grid.push_back(loaded_vector);
     }
     input.close();
+
+    bricks.resize(brick_grid.size());
+    for (auto row : bricks)
+        row.resize(brick_grid[0].size());
+
+    for (size_t i = 0; i < brick_grid.size(); ++i) {
+        for (size_t j = 0; j < brick_grid[i].size(); ++j) {
+            bricks[i][j] = createBrickFrom(brick_grid[i][j], brick_rect);
+            brick_rect.x += brick_rect.width;
+        }
+        brick_rect.y += brick_rect.height;
+    }
+}
+
+
+void ArkanoidScene::drawBrick(const Brick::brickType type, const Rectangle rect) const
+{
+    switch(type) {
+    using brickType = Brick::brickType;
+    case brickType::SOFT:
+        DrawRectangleRec(rect, GREEN);
+        break;
+    case brickType::MIDDLE:
+        DrawRectangleRec(rect, YELLOW);
+        break;
+    case brickType::HARD:
+        DrawRectangleRec(rect, RED);
+        break;
+    default:
+        break;
+    }
 }

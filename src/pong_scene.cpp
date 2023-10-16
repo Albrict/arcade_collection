@@ -1,5 +1,4 @@
 #include <math.h>
-#include "../third_party/imgui.h"
 #include "pong_scene.hpp"
 #include "graphics.hpp"
 #include "collision.hpp"
