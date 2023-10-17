@@ -7,12 +7,8 @@ public:
         : Brick(brickType::SOFT, rect, GREEN, 10) {};
     ~SoftBrick() = default;
     
-    void draw() const noexcept
-    {
-        DrawRectangleRec(rect, color);
-    }
-    void update()
-    {
-       ; 
-    }
+    void proccessEvents() override {} 
+    void update() override {}
+    void draw() const override  
+    { DrawRectangleRec(rect, color); }
 };
