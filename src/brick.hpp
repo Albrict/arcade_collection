@@ -1,7 +1,8 @@
 #pragma once
 #include <raylib.h>
+#include "object.hpp"
 
-class Brick {
+class Brick : public Object {
 public: 
     enum brickType : int {
         SOFT,
@@ -12,9 +13,6 @@ public:
     Brick(const brickType type, const Rectangle brick_rect, const Color brick_color, const unsigned int brick_health)
         : type(type), rect(brick_rect), color(brick_color), health(brick_health) {}
     virtual ~Brick() = default;
-    
-    virtual void update() = 0; 
-    virtual void draw() const noexcept = 0;
 
     Rectangle getBrickRect() const  noexcept
     { return rect; }
