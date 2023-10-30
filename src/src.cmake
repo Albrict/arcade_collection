@@ -9,4 +9,9 @@ set(game_source
     src/arkanoid_scene.cpp
     src/collision.cpp
     src/simple_button.cpp 
-    src/label.cpp)
+    src/label.cpp
+    src/scene.cpp
+    src/main_scene.cpp
+    src/message_system.cpp
+    src/pong_player.cpp
+    src/pong_racket.cpp)

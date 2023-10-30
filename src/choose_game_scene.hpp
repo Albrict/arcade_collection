@@ -7,13 +7,6 @@ class ChooseGameScene : public Scene {
 public:
     ChooseGameScene();
     ~ChooseGameScene() = default; 
-
-    void proccessEvents() override 
-    { for (auto &button : menu_buttons) button->proccessEvents(); }
-    void update() override
-    { for (auto &button : menu_buttons) button->update(); }
-    void draw() const override
-    { for (auto &button : menu_buttons) button->draw(); }
 private:
-    std::array<SimpleButton::unique_ptr, 4> menu_buttons {};
+    unsigned int widget_table = 0;
 };

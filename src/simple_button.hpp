@@ -12,7 +12,7 @@ public:
 
     void proccessEvents() override;
     void update() override {}
-    void draw() const noexcept override 
+    void draw() const override 
     { DrawRectangleRec(rect, button_current_color); if (label) label->draw();}
 
     void setCallback(Widget::callback p_callback, void *p_data)
