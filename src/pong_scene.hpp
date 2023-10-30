@@ -1,7 +1,6 @@
 #pragma once
-#include "scene.hpp"
-#include "simple_button.hpp"
 #include "graphics.hpp"
+#include "scene.hpp"
 
 class PongScene : public Scene {
 public:
@@ -12,52 +11,45 @@ public:
     void update() override;
     void draw() const override;
 private:
-    void initializeObjects();
-    void proccessPlayerVsPlayer();
-    void proccessPlayerVsCPU();
-     
-    void updatePlayerVsCPU();
-    void drawMenu() const
-    { for (const auto &button : menu_buttons) button->draw(); }
-    void drawPause() const 
-    { for (const auto &button : pause_buttons) button->draw(); }
-
-    void checkBallCollision(const Rectangle rect) noexcept;
-    void moveBallToTheMiddle() noexcept
-    {
-        const int direction = GetRandomValue(LEFT, RIGHT);
-        racket.x = Graphics::getResolution().x / 2.f;
-        racket.y = Graphics::getResolution().y / 2.f;
-
-        if (direction == LEFT)
-            velocity = {racket_speed, 0.0f};
-        else  
-            velocity = {racket_speed * -1.f, 0.0f};
-    }
+    void initMenuWidgetsTable();
+    void initPauseWidgetsTable();
+    void initPvpObjectsTable();
+    void initPveObjectsTable();
+    void initGraphicalObjectsTable();
 private:
-    Rectangle first_player;
-    Rectangle second_player;
-    Rectangle racket;
-    Vector2 velocity;
+    struct MiddleLine : public Object {
+    public:
+        void proccessEvents() override {}
+        void update() override {}
+        void draw() const override 
+        { 
+            const float font_size = 54.f;
+            const float middle_x = Graphics::getResolution().x / 2.f;
 
-    unsigned int first_player_score;
-    unsigned int second_player_score;
-    float racket_speed = 550.f;
-    
-    enum direction {
-        LEFT = 0,
-        RIGHT
+            DrawLine(middle_x, 0.f, middle_x, Graphics::getResolution().y, WHITE);
+        }
     };
 
-    enum class state {
+    enum class State {
         MENU,
         PAUSE,
-        PLAYER_VS_PLAYER,
-        PLAYER_VS_CPU 
+        GAME
     };
+    State current_state = State::MENU;
+    
+    // Tables
+    unsigned int current_table = 0;
+    unsigned int menu_widget_table = 0;
+    unsigned int pause_widget_table = 0;
+    unsigned int pvp_mode_table = 0;
+    unsigned int pve_mode_table = 0;
+    unsigned int graphical_objects_table = 0;
+    unsigned int current_game_mode = 0;
+    // Scene properties
+    unsigned int first_player_score = 0;
+    unsigned int second_player_score = 0;
 
-    state current_state;
-    state saved_state; // Needed for pause state
-    std::array<SimpleButton::unique_ptr, 3> menu_buttons;
-    std::array<SimpleButton::unique_ptr, 2> pause_buttons;
+    // Scene objects 
+    unsigned int first_player_score_label = 0;
+    unsigned int second_player_score_label = 0;
 };

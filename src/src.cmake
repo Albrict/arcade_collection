@@ -12,4 +12,6 @@ set(game_source
     src/label.cpp
     src/scene.cpp
     src/main_scene.cpp
-    src/message_system.cpp)
+    src/message_system.cpp
+    src/pong_player.cpp
+    src/pong_racket.cpp)

@@ -1,225 +1,177 @@
-#include <math.h>
 #include "pong_scene.hpp"
 #include "graphics.hpp"
-#include "collision.hpp"
-
-namespace {
-    constexpr float MaxBounceAngle = 75 * DEG2RAD;
-    enum MenuButtons : size_t {
-        PVP = 0,
-        PVE,
-        BACK_TO_LOBBY
-    };
-    enum PauseButtons : size_t {
-        CONTINUE = 0,
-        BACK_TO_MENU
-    };
-}
+#include "simple_button.hpp"
+#include "pong_player.hpp"
+#include "pong_racket.hpp"
+#include <iostream>
 
 PongScene::PongScene()
-    : Scene(),
-    racket({Graphics::getResolution().x / 2.f, Graphics::getResolution().y / 2.f, 20.f, 20.f}),
-    first_player_score(0),
-    second_player_score(0),
-    current_state(state::MENU),
-    menu_buttons(),
-    pause_buttons()
+    : Scene()
 {
-    // Initialize UI
-    const Vector2 resolution = Graphics::getResolution();
-    const std::array<const char*, 5> button_labels = {"PvP", "PvE", "Back to lobby", "Continue", "Back to menu"};
-    const float button_width = 215.f;
-    const float button_height = 70.f;
-
-    const int initial_x = resolution.x / 2 - button_width / 2;
-    int initial_y = resolution.y / 3 - button_height;
-
-    for (int i = 0; i < menu_buttons.size(); ++i) {
-        menu_buttons[i] = std::make_unique<SimpleButton>(initial_x, initial_y, button_width, button_height, button_labels[i]);
-        initial_y += button_height * 2;
-    }
-    initial_y = resolution.y / 3 - button_height;
-    pause_buttons[CONTINUE] = std::make_unique<SimpleButton>(initial_x, initial_y, button_width, button_height, button_labels[3]);
-    initial_y += button_height * 2;
-    pause_buttons[BACK_TO_MENU] = std::make_unique<SimpleButton>(initial_x, initial_y, button_width, button_height, button_labels[4]);
-    
-    // Initialize callbacks
-    auto pvp_callback           = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = state::PLAYER_VS_PLAYER; scene->initializeObjects();};
-    auto pve_callback           = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = state::PLAYER_VS_CPU; scene->initializeObjects(); };
-    auto back_to_lobby_callback = [](void *data) { Subject   *subject = static_cast<Subject*>(data); subject->notify(event::BACK_TO_THE_GAME_CHOOSE); };
-    auto back_to_menu_callback  = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = state::MENU; };
-    auto continue_callback      = [](void *data) { PongScene *scene = static_cast<PongScene*>(data); scene->current_state = scene->saved_state; };
-
-    menu_buttons[PVP]->setCallback(pvp_callback, this);
-    menu_buttons[PVE]->setCallback(pve_callback, this);
-    menu_buttons[BACK_TO_LOBBY]->setCallback(back_to_lobby_callback, &this->subject);
-
-    pause_buttons[CONTINUE]->setCallback(continue_callback, this);
-    pause_buttons[BACK_TO_MENU]->setCallback(back_to_menu_callback, this);
+    menu_widget_table = Scene::createTable();
+    pause_widget_table = Scene::createTable();
+    pvp_mode_table = Scene::createTable();
+    pve_mode_table = Scene::createTable();
+    graphical_objects_table = Scene::createTable();
+    initMenuWidgetsTable();
+    initPauseWidgetsTable();
+    initGraphicalObjectsTable();
 }
 
 void PongScene::proccessEvents()
 {
-    switch(current_state) {
-    case state::MENU:
-        for (auto &button : menu_buttons)
-            button->proccessEvents();
-        break;
-    case state::PAUSE:
-        for (auto &button : pause_buttons)
-            button->proccessEvents();
-        break;
-    case state::PLAYER_VS_CPU:
-        proccessPlayerVsCPU();
-        break;
-    case state::PLAYER_VS_PLAYER:
-        proccessPlayerVsPlayer();
-        break;
-    default:
-        break;
+    std::any data = MessageSystem::getMessage(Object::object_id);
+    if (data.has_value()) {
+        auto msg = std::any_cast<PongRacket::Message>(data);
+        switch(msg) {
+        case PongRacket::Message::FIRST_PLAYER_WIN:
+            ++first_player_score;
+            break;
+        case PongRacket::Message::SECOND_PLAYER_WIN:
+            ++second_player_score;
+            break;
+        }
     }
+    if (current_table == pvp_mode_table || current_table == pve_mode_table) {
+        if (IsKeyDown(KEY_ESCAPE)) {
+            current_game_mode = current_table;
+            current_table = pause_widget_table;
+        }
+    }
+    Scene::proccessTable(graphical_objects_table);
+    Scene::proccessTable(current_table);
 }
 
 void PongScene::update()
 {
-    if (current_state == state::PAUSE)
-        return;
-    if (current_state == state::PLAYER_VS_CPU)
-        updatePlayerVsCPU();
-    racket.x += velocity.x * GetFrameTime();
-    racket.y += velocity.y * GetFrameTime();
-    checkBallCollision(first_player);
-    checkBallCollision(second_player);
-    
+    Scene::updateTable(current_table);
 }
 
 void PongScene::draw() const 
 {
-    switch(current_state) {
-    case state::MENU:
-        drawMenu();
-        break;
-    case state::PAUSE:
-        drawPause();
-        [[fallthrough]];
-    default:
-        const float font_size = 54.f;
-        const float middle_x = Graphics::getResolution().x / 2.f;
-        DrawLine(middle_x, 0.f, middle_x, Graphics::getResolution().y, WHITE);
-
-        DrawText(TextFormat("%d", first_player_score), middle_x - middle_x / 2.f, Graphics::getResolution().y / 4.f, font_size, WHITE);
-        DrawText(TextFormat("%d", second_player_score), middle_x + middle_x / 2.f, Graphics::getResolution().y / 4.f, font_size, WHITE);
-        DrawRectangleRec(first_player, WHITE);
-        DrawRectangleRec(second_player, WHITE);
-        DrawRectangleRec(racket, WHITE);
+    if (current_table == pause_widget_table) {
+        Scene::drawTable(current_game_mode);
+        Scene::drawTable(graphical_objects_table);
+        Scene::drawTable(current_table);
+    } else {
+        if (current_table != menu_widget_table)
+            Scene::drawTable(graphical_objects_table);
+        Scene::drawTable(current_table);
     }
 }
 
-void PongScene::proccessPlayerVsPlayer()
+void PongScene::initMenuWidgetsTable()
 {
-    if (IsKeyDown(KEY_ESCAPE)) {
-        saved_state = current_state;
-        current_state = state::PAUSE;
+    const Vector2 resolution = Graphics::getResolution();
+    const std::array<const char*, 3> menu_button_labels = { "PvP", "PvE", "Back to lobby" };
+    const float button_width = 215.f;
+    const float button_height = 70.f;
+    const std::array<Widget::callback, 3> menu_callbacks = {
+        {
+            { [](void *data) { auto scene = static_cast<PongScene*>(data); scene->current_table = scene->pvp_mode_table; scene->initPvpObjectsTable(); } },
+            { [](void *data) { auto scene = static_cast<PongScene*>(data); scene->current_table = scene->pve_mode_table; scene->initPveObjectsTable(); } },
+            { [](void *data) { auto msg = event::BACK_TO_THE_GAME_CHOOSE; MessageSystem::sendMessage(MessageSystem::root_scene_id, msg); } }
+        }
+    };
+
+    const int initial_x = resolution.x / 2 - button_width / 2;
+    int initial_y = resolution.y / 3 - button_height;
+    {
+        for (size_t i = 0; i < menu_callbacks.size(); ++i) {
+            auto button = std::make_unique<SimpleButton>(initial_x, initial_y, button_width, button_height, menu_button_labels[i]);
+            button->setCallback(menu_callbacks[i], this);
+            initial_y += button_height * 2;
+
+            Scene::insertObject(std::move(button), menu_widget_table);
+        }
     }
-    if (IsKeyDown(KEY_W)) {
-        first_player.y -= 10.f;
-        Collision::checkRecBoundsAndLimit(first_player);
-    } 
-    if (IsKeyDown(KEY_S)) {
-        first_player.y += 10.f;
-        Collision::checkRecBoundsAndLimit(first_player);
-    } 
-    if (IsKeyDown(KEY_UP)) {
-        second_player.y -= 10.f;
-        Collision::checkRecBoundsAndLimit(second_player);
-    } 
-    if (IsKeyDown(KEY_DOWN)) {
-        second_player.y += 10.f;
-        Collision::checkRecBoundsAndLimit(second_player);
-    }
+    current_table = menu_widget_table;
 }
 
-void PongScene::proccessPlayerVsCPU()
+void PongScene::initPauseWidgetsTable()
 {
-    if (IsKeyDown(KEY_ESCAPE)) {
-        saved_state = current_state;
-        current_state = state::PAUSE;
-    }
-    if (IsKeyDown(KEY_W)) {
-        first_player.y -= 10.f;
-        Collision::checkRecBoundsAndLimit(first_player);
-    } 
-    if (IsKeyDown(KEY_S)) {
-        first_player.y += 10.f;
-        Collision::checkRecBoundsAndLimit(first_player);
-    }
-}
+    const Vector2 resolution = Graphics::getResolution();
+    const std::array<const char*, 2> pause_button_labels = { "Continue", "Back to menu" };
+    const float button_width = 215.f;
+    const float button_height = 70.f;
+    const std::array<Widget::callback, 2> pause_callback = {
+        {
+            { [](void *data) { auto scene = static_cast<PongScene*>(data); scene->current_table = scene->current_game_mode; } },
+            { [](void *data) { auto scene = static_cast<PongScene*>(data); scene->current_table = scene->menu_widget_table; } },
+        }
+    };
+    const int initial_x = resolution.x / 2 - button_width / 2;
 
-void PongScene::updatePlayerVsCPU()
-{
-    if (second_player.y + second_player.height / 2 >= racket.y)
-        second_player.y -= 10.f;
-    if (second_player.y + second_player.height / 2 <= racket.y)
-        second_player.y += 10.f;
- 
-}
-// TODO: Naive ball physics implementation.
-// But can be better, check this implementation:
-// https://gamedev.stackexchange.com/questions/4253/in-pong-how-do-you-calculate-the-balls-direction-when-it-bounces-off-the-paddl
-void PongScene::checkBallCollision(const Rectangle rect) noexcept
-{
-    if (racket.x + racket.width >= GetScreenWidth()) {
-        ++first_player_score;
-        moveBallToTheMiddle();
-    }
-    if (racket.x <= 0) {
-        ++second_player_score;
-        moveBallToTheMiddle();
-    }
-        
-    if (racket.y  <= 0) {
-        velocity.y = racket_speed;
-    }
-
-    if (racket.y + racket.height  >= Graphics::getResolution().y) {
-        velocity.y = -racket_speed;
-    }
-
-    if (CheckCollisionRecs(racket, rect)) {
-
-        if (velocity.x < 0 || velocity.x > 0) {
-            velocity.x *= -1.1;
-            velocity.y = (racket.y - rect.y) / (rect.height / 2) * 300.f;
-
-            // Limit speed
-            if (velocity.x >= 1000.f)
-                velocity.x = 1000.f;
-            if (velocity.x <= -1000.f)
-                velocity.x = -1000.f;
-
-            if (velocity.y >= 1000.f)
-                velocity.y = 1000.f;
-            if (velocity.y == -1000.f)
-                velocity.y = -1000.f;
+    int initial_y = resolution.y / 3 - button_height;
+    {
+        for (size_t i = 0; i < pause_callback.size(); ++i) {
+            auto button = std::make_unique<SimpleButton>(initial_x, initial_y, button_width, button_height, pause_button_labels[i]);
+            button->setCallback(pause_callback[i], this);
+            initial_y += button_height * 2;
+            Scene::insertObject(std::move(button), pause_widget_table);
         }
     }
 }
-
-void PongScene::initializeObjects()
+    
+void PongScene::initPvpObjectsTable()
 {
-    racket = {Graphics::getResolution().x / 2.f, Graphics::getResolution().y / 2.f, 20.f, 20.f};
-    first_player_score = 0;
-    second_player_score = 0;
+    Scene::clearTable(pvp_mode_table);
     const Vector2 resolution = Graphics::getResolution();
     const float players_width = 10.f;
     const float players_height = 100.f;
-    first_player = {.x = 30.f, .y = resolution.y / 2.f, .width = players_width, .height = players_height};
-    second_player = {.x = resolution.x - 40.f, .y = resolution.y / 2.f, .width = players_width, .height = players_height};
-    
-    // Get random direction for racket
-    const int direction = GetRandomValue(LEFT, RIGHT);
-    if (direction == LEFT)
-        velocity = {racket_speed, 0.0f};
-    else  
-        velocity = {racket_speed * -1.f, 0.0f};
+    const Rectangle first_player = { .x = 30.f, .y = resolution.y / 2.f, .width = players_width, .height = players_height};
+    const Rectangle second_player = { .x = resolution.x - 40.f, .y = resolution.y / 2.f, .width = players_width, .height = players_height };
+    const Rectangle racket({Graphics::getResolution().x / 2.f, Graphics::getResolution().y / 2.f, 20.f, 20.f});
+    {
+        auto first_player_obj = std::make_unique<PongPlayer>(first_player, WHITE, PongPlayer::PlayerType::FIRST);
+        auto second_player_obj = std::make_unique<PongPlayer>(second_player, WHITE, PongPlayer::PlayerType::SECOND);
+        auto racket_obj = std::make_unique<PongRacket>(Object::object_id, first_player_obj->getObjectId(), second_player_obj->getObjectId(), racket, WHITE);
+        Scene::insertObject(std::move(first_player_obj), pvp_mode_table);
+        Scene::insertObject(std::move(second_player_obj), pvp_mode_table);
+        Scene::insertObject(std::move(racket_obj), pvp_mode_table);
+    }
+}
+
+void PongScene::initPveObjectsTable()
+{
+    Scene::clearTable(pve_mode_table);
+    const Vector2 resolution = Graphics::getResolution();
+    const float players_width = 10.f;
+    const float players_height = 100.f;
+    const Rectangle first_player = { .x = 30.f, .y = resolution.y / 2.f, .width = players_width, .height = players_height};
+    const Rectangle second_player = { .x = resolution.x - 40.f, .y = resolution.y / 2.f, .width = players_width, .height = players_height };
+    const Rectangle racket({Graphics::getResolution().x / 2.f, Graphics::getResolution().y / 2.f, 20.f, 20.f});
+    {
+        auto first_player_obj = std::make_unique<PongPlayer>(first_player, WHITE, PongPlayer::PlayerType::FIRST);
+        auto second_player_obj = std::make_unique<PongPlayer>(second_player, WHITE, PongPlayer::PlayerType::CPU);
+        auto racket_obj = std::make_unique<PongRacket>(Object::object_id, first_player_obj->getObjectId(), second_player_obj->getObjectId(), racket, WHITE);
+
+        Scene::insertObject(std::move(first_player_obj), pve_mode_table);
+        Scene::insertObject(std::move(second_player_obj), pve_mode_table);
+        Scene::insertObject(std::move(racket_obj), pve_mode_table);
+    }
+}
+
+void PongScene::initGraphicalObjectsTable()
+{
+    const float font_size = 54.f;
+    const float middle_x = Graphics::getResolution().x / 2.f;
+    const Vector2 first_label_pos = { middle_x - middle_x / 2.f, Graphics::getResolution().y / 4.f};
+    const Vector2 second_label_pos = { middle_x + middle_x / 2.f, Graphics::getResolution().y / 4.f };
+    const std::array<Widget::callback, 2> label_callbacks = {
+        {
+            { [this](void *data) { auto label = static_cast<Label*>(data); label->updateLabel(TextFormat("%d", first_player_score)); } },
+            { [this](void *data) { auto label = static_cast<Label*>(data); label->updateLabel(TextFormat("%d", second_player_score)); } },
+        }
+    };
+    {
+        auto first_label = std::make_unique<Label>(first_label_pos, TextFormat("%d", first_player_score), GetFontDefault(), font_size);
+        auto second_label = std::make_unique<Label>(second_label_pos, TextFormat("%d", second_player_score), GetFontDefault(), font_size);
+        first_label->setCallback(label_callbacks[0], first_label.get());
+        second_label->setCallback(label_callbacks[1], second_label.get());
+
+        Scene::insertObject(std::move(first_label), graphical_objects_table);
+        Scene::insertObject(std::move(second_label), graphical_objects_table);
+        Scene::insertObject(std::make_unique<PongScene::MiddleLine>(), graphical_objects_table);
+    }
 }
