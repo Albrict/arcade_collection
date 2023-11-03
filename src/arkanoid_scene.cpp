@@ -59,7 +59,7 @@ ArkanoidScene::ArkanoidScene()
     auto first_level            = [](void *data){ ArkanoidScene *scene = static_cast<ArkanoidScene*>(data); scene->loadLevel(level_one_path); scene->current_state = state::GAME; };
     auto second_level           = [](void *data){ ArkanoidScene *scene = static_cast<ArkanoidScene*>(data); scene->loadLevel(level_two_path); scene->current_state = state::GAME; };
     auto third_level            = [](void *data){ ArkanoidScene *scene = static_cast<ArkanoidScene*>(data); scene->loadLevel(level_three_path); scene->current_state = state::GAME;};
-    auto back_to_lobby_callback = [](void *data){ Subject *subject = static_cast<Subject*>(data); subject->notify(event::BACK_TO_THE_GAME_CHOOSE); };
+    auto back_to_lobby_callback = [](void *data) { auto msg = event::BACK_TO_THE_GAME_CHOOSE; MessageSystem::sendMessage(MessageSystem::root_scene_id, msg); };
 
     level_menu_buttons[LEVEL_ONE]->setCallback(first_level, this);
     level_menu_buttons[LEVEL_TWO]->setCallback(second_level, this);
