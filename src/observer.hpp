@@ -7,6 +7,8 @@ enum class event {
     BACK_TO_THE_MAIN_MENU,
     PLAY,
     GAME_PONG,
+    GAME_ARKANOID,
+    GAME_SPACE_INVADERS,
     GAME_OVER,
     RESTART
 };

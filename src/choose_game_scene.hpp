@@ -1,14 +1,12 @@
 #pragma once
 #include "scene.hpp"
-#include "../third_party/imgui.h"
+#include "simple_button.hpp"
+#include <array>
 
 class ChooseGameScene : public Scene {
-    bool opened = true;
 public:
-    ChooseGameScene() {}
-    ~ChooseGameScene() {}
-
-    void proccessEvents() {}
-    void update() {}
-    void draw() noexcept;
+    ChooseGameScene();
+    ~ChooseGameScene() = default; 
+private:
+    unsigned int widget_table = 0;
 };

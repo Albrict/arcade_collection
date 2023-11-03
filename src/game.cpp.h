@@ -30,7 +30,7 @@ void Game::init()
     SetConfigFlags(FLAG_VSYNC_HINT);
     InitWindow(game_resolution.x, game_resolution.y, "Arcade Collection");
     SetExitKey(KEY_NULL);
-
+    // Enable dark theme
     SetTargetFPS(60);
     ToggleFullscreen();
     
@@ -107,6 +107,7 @@ void Game::draw(RenderTexture2D target, const Vector2 resolution, const float sc
     const Rectangle dest_rect = {   (GetScreenWidth() - (resolution.x * scale)) * 0.5f, 
                                     (GetScreenHeight() - (resolution.y * scale))*0.5f,
                                     resolution.x * scale, resolution.y *scale };
+    bool opened = true;
     BeginTextureMode(target);
     {
         ClearBackground(BLACK);
