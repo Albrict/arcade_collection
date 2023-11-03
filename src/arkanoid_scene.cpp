@@ -16,9 +16,9 @@
 namespace {
     using namespace std::filesystem;
     const int BRICK_AMOUNT  = 20;
-    const path level_one_path    = "../assets/arkanoid_levels/level_one.data";
-    const path level_two_path    = "../assets/arkanoid_levels/level_two.data";
-    const path level_three_path  = "../assets/arkanoid_levels/level_three.data";
+    const path level_one_path    = "assets/arkanoid_levels/level_one.data";
+    const path level_two_path    = "assets/arkanoid_levels/level_two.data";
+    const path level_three_path  = "assets/arkanoid_levels/level_three.data";
     const path choosen_level;
 
     enum LevelMenuButtons : size_t {
