@@ -14,9 +14,6 @@ find_package(raylib ${RAYLIB_VERSION} QUIET) # QUIET or REQUIRED
 # Our Project
 include(src/src.cmake)
 
-# Third party libraries
-include(third_party/third_party.cmake)
-
 add_executable(${PROJECT_NAME} ${third_party} ${game_source})
 
 #set(raylib_VERBOSE 1)
