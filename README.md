@@ -10,6 +10,7 @@
  - Learned how to serialize data using external library and my custom solution
  - Implemented message system between objects, but it's messy tho
  - Implemented object table for scenes
+ - Implemented level system for Arkanoid
  - Learned a little bit of STL
  - How to create a level editor for Arkanoid, but it's a closed source because it was intended for one-time use only
  - Crosscompile from Linux to Windows using MingW compiler
